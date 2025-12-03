@@ -897,7 +897,6 @@ impl PageEndpoint {
                     this.original_name.clone(),
                     *this.pages_structure,
                     runtime,
-                    this.pages_project.project().next_config(),
                 )
                 .await?;
 
@@ -918,7 +917,6 @@ impl PageEndpoint {
                     this.original_name.clone(),
                     *this.pages_structure,
                     runtime,
-                    this.pages_project.project().next_config(),
                 )
                 .await?;
                 InternalSsrChunkModule {

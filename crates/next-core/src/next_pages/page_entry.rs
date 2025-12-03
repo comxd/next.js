@@ -16,7 +16,6 @@ use turbopack_core::{
 };
 
 use crate::{
-    next_config::NextConfig,
     next_edge::entry::wrap_edge_entry,
     pages_structure::{PagesStructure, PagesStructureItem},
     util::{NextRuntime, file_content_rope, load_next_js_template, pages_function_name},
@@ -39,7 +38,6 @@ pub async fn create_page_ssr_entry_module(
     next_original_name: RcStr,
     pages_structure: Vc<PagesStructure>,
     runtime: NextRuntime,
-    next_config: Vc<NextConfig>,
 ) -> Result<Vc<PageSsrEntryModule>> {
     let definition_page = next_original_name;
     let definition_pathname = pathname;
@@ -169,7 +167,6 @@ pub async fn create_page_ssr_entry_module(
                 definition_pathname.clone(),
                 reference_type,
                 pages_structure,
-                next_config,
                 source_query.clone(),
             );
         } else {
@@ -213,7 +210,6 @@ async fn wrap_edge_page(
     pathname: RcStr,
     reference_type: ReferenceType,
     pages_structure: Vc<PagesStructure>,
-    next_config: Vc<NextConfig>,
     source_query: RcStr,
 ) -> Result<Vc<Box<dyn Module>>> {
     const INNER: &str = "INNER_PAGE_ENTRY";
@@ -222,8 +218,6 @@ async fn wrap_edge_page(
     const INNER_APP: &str = "INNER_APP";
     const INNER_ERROR: &str = "INNER_ERROR";
     const INNER_ERROR_500: &str = "INNER_500";
-
-    let next_config_val = &*next_config.await?;
 
     let source = load_next_js_template(
         "edge-ssr.js",
@@ -236,9 +230,6 @@ async fn wrap_edge_page(
             ("VAR_MODULE_GLOBAL_ERROR", INNER_ERROR),
         ],
         &[
-            // TODO do we really need to pass the entire next config here?
-            // This is bad for invalidation as any config change will invalidate this
-            ("nextConfig", &*serde_json::to_string(next_config_val)?),
             (
                 "pageRouteModuleOptions",
                 &serde_json::to_string(&get_route_module_options(page.clone(), pathname.clone()))?,
