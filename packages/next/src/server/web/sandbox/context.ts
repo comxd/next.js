@@ -116,14 +116,18 @@ async function loadWasm(
 }
 
 function buildEnvironmentVariablesFrom(
-  injectedEnvironments: Record<string, string>
+  injectedEnvironments: Record<string, string>,
+  relativeProjectDir?: string
 ): Record<string, string | undefined> {
-  const pairs = Object.keys(process.env).map((key) => [key, process.env[key]])
-  const env = Object.fromEntries(pairs)
-  for (const key of Object.keys(injectedEnvironments)) {
-    env[key] = injectedEnvironments[key]
+  let env = Object.fromEntries([
+    ...Object.entries(process.env),
+    ...Object.entries(injectedEnvironments),
+    ['NEXT_RUNTIME', 'edge'],
+  ])
+  if (process.env.NODE_ENV !== 'production' && relativeProjectDir) {
+    // Needed for accessing routerServerGlobal in dev
+    env.__NEXT_RELATIVE_PROJECT_DIR = relativeProjectDir
   }
-  env.NEXT_RUNTIME = 'edge'
   return env
 }
 
@@ -135,8 +139,13 @@ Learn more: https://nextjs.org/docs/api-reference/edge-runtime`)
   throw error
 }
 
-function createProcessPolyfill(env: Record<string, string>) {
-  const processPolyfill = { env: buildEnvironmentVariablesFrom(env) }
+function createProcessPolyfill(
+  env: Record<string, string>,
+  relativeProjectDir?: string
+) {
+  const processPolyfill = {
+    env: buildEnvironmentVariablesFrom(env, relativeProjectDir),
+  }
   const overriddenValue: Record<string, any> = {}
 
   for (const key of Object.keys(process)) {
@@ -268,7 +277,10 @@ async function createModuleContext(options: ModuleContextOptions) {
         ? { strings: true, wasm: true }
         : undefined,
     extend: (context) => {
-      context.process = createProcessPolyfill(edgeFunctionEntry.env)
+      context.process = createProcessPolyfill(
+        edgeFunctionEntry.env,
+        options.relativeProjectDir
+      )
 
       Object.defineProperty(context, 'require', {
         enumerable: false,
@@ -491,6 +503,7 @@ interface ModuleContextOptions {
   onWarning: (warn: Error) => void
   useCache: boolean
   distDir: string
+  relativeProjectDir: string
   edgeFunctionEntry: Pick<EdgeFunctionDefinition, 'assets' | 'wasm' | 'env'>
 }
 
