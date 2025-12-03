@@ -35,6 +35,7 @@ interface RunnerFnParams {
   useCache: boolean
   edgeFunctionEntry: Pick<EdgeFunctionDefinition, 'assets' | 'wasm' | 'env'>
   distDir: string
+  relativeProjectDir: string
   incrementalCache?: any
   serverComponentsHmrCache?: ServerComponentsHmrCache
 }
@@ -90,6 +91,15 @@ export async function getRuntimeContext(
   ;(runtime.context.globalThis as any as typeof routerServerGlobal)[
     RouterServerContextSymbol
   ] = routerServerGlobal[RouterServerContextSymbol]
+
+  runtime.context.globalThis.process = {
+    ...runtime.context.globalThis.process,
+    env: {
+      ...runtime.context.globalThis.process?.env,
+      // Needed for accesssing routerServerGlobal in dev
+      __NEXT_RELATIVE_PROJECT_DIR: params.relativeProjectDir,
+    },
+  }
 
   if (params.serverComponentsHmrCache) {
     runtime.context.globalThis.__serverComponentsHmrCache =

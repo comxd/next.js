@@ -19,6 +19,7 @@ describe('Next.js sandbox Request constructor', () => {
       onWarning: () => {},
       useCache: false,
       distDir: '/tmp',
+      relativeProjectDir: '',
       edgeFunctionEntry: {
         assets: [],
         wasm: [],

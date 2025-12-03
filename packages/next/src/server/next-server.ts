@@ -1766,6 +1766,7 @@ export default class NextNodeServer extends BaseServer<
 
       result = await run({
         distDir: this.distDir,
+        relativeProjectDir: relative(process.cwd(), this.dir),
         name: middlewareInfo.name,
         paths: middlewareInfo.paths,
         edgeFunctionEntry: middlewareInfo,
@@ -2039,6 +2040,7 @@ export default class NextNodeServer extends BaseServer<
     const { run } = require('./web/sandbox') as typeof import('./web/sandbox')
     const result = await run({
       distDir: this.distDir,
+      relativeProjectDir: relative(process.cwd(), this.dir),
       name: edgeInfo.name,
       paths: edgeInfo.paths,
       edgeFunctionEntry: edgeInfo,

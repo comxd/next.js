@@ -792,6 +792,7 @@ export async function isPageStatic({
           name: edgeInfo.name,
           useCache: true,
           distDir,
+          relativeProjectDir: path.relative(process.cwd(), dir),
         })
         const mod = (
           await runtime.context._ENTRIES[`middleware_${edgeInfo.name}`]
